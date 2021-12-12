@@ -1,6 +1,8 @@
 import 'package:boi_system/dao/boi_dao.dart';
 import 'package:boi_system/dao/connection_factory.dart';
+import 'package:boi_system/helper/error.dart';
 import 'package:boi_system/model/boi.dart';
+import 'package:boi_system/repositories/boi_repository.dart';
 import 'package:boi_system/widgets/drawer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -52,32 +54,32 @@ class _ListarBoisPageState extends State<ListarBoisPage> {
   //   // por enquanto não faz nada
   // }
 
-  void _showItem(BuildContext context, int index) {
-    // mostra um boi na dialog
-    Boi boi = _lista[index];
+  // void _showItem(BuildContext context, int index) {
+  //   // mostra um boi na dialog
+  //   Boi boi = _lista[index];
 
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(boi.nome),
-            content: Column(
-              children: [
-                Text("Nome: ${boi.nome}"),
-                Text("Raça: ${boi.raca}"),
-                Text("Idade: ${boi.idade} anos"),
-              ],
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text("Ok"))
-            ],
-          );
-        });
-  }
+  //   showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: Text(boi.nome),
+  //           content: Column(
+  //             children: [
+  //               Text("Nome: ${boi.nome}"),
+  //               Text("Raça: ${boi.raca}"),
+  //               Text("Idade: ${boi.idade} anos"),
+  //             ],
+  //           ),
+  //           actions: [
+  //             TextButton(
+  //                 onPressed: () {
+  //                   Navigator.of(context).pop();
+  //                 },
+  //                 child: const Text("Ok"))
+  //           ],
+  //         );
+  //       });
+  // }
 
   void _editItem(BuildContext context, int index) {
     // chama tela de edição de boi
@@ -160,21 +162,86 @@ class _ListarBoisPageState extends State<ListarBoisPage> {
     );
   }
 
-  Future<List<Boi>> _obterTodos() async {
-    Database db = await ConnectionFactory.factory.database;
-    BoiDAO dao = BoiDAO(db);
+  // Future<List<Boi>> _obterTodos() async {
+  //   Database db = await ConnectionFactory.factory.database;
+  //   BoiDAO dao = BoiDAO(db);
 
-    List<Boi> tempList = await dao.obterTodos();
-    ConnectionFactory.factory.close();
-    return tempList;
+  //   List<Boi> tempList = await dao.obterTodos();
+  //   ConnectionFactory.factory.close();
+  //   return tempList;
+  // }
+
+  // void _removerBoi(int id) async {
+  //   Database db = await ConnectionFactory.factory.database;
+  //   BoiDAO dao = BoiDAO(db);
+
+  //   await dao.remover(id);
+
+  //   ConnectionFactory.factory.close();
+  // }
+
+  Future<List<Boi>> _obterTodos() async {
+    List<Boi> tempLista = <Boi>[];
+    try {
+      BoiRepository repository = BoiRepository();
+      tempLista = await repository.buscarTodos();
+    } catch (exception) {
+      showError(context, "Erro obtendo lista de bois", exception.toString());
+    }
+    return tempLista;
   }
 
   void _removerBoi(int id) async {
-    Database db = await ConnectionFactory.factory.database;
-    BoiDAO dao = BoiDAO(db);
+    try {
+      BoiRepository repository = BoiRepository();
+      await repository.remover(id);
 
-    await dao.remover(id);
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Boi $id removido com sucesso.')));
+    } catch (exception) {
+      showError(context, "Erro removendo boi", exception.toString());
+    }
+  }
 
-    ConnectionFactory.factory.close();
+  void _showItem(BuildContext context, int index) {
+    Boi boi = _lista[index];
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(boi.nome),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.create),
+                    Text("Nome: ${boi.nome}")
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.assistant_photo),
+                    Text("Raça: ${boi.raca}")
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.cake),
+                    Text("Idade: ${boi.idade}")
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("OK"))
+            ],
+          );
+        });
   }
 }

@@ -1,6 +1,8 @@
 import 'package:boi_system/dao/boi_dao.dart';
 import 'package:boi_system/dao/connection_factory.dart';
+import 'package:boi_system/helper/error.dart';
 import 'package:boi_system/model/boi.dart';
+import 'package:boi_system/repositories/boi_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:boi_system/widgets/drawer.dart';
 import 'package:sqflite/sqflite.dart';
@@ -107,21 +109,37 @@ class _InserirBoiState extends State<InserirBoiPage> {
     );
   }
 
-  void _salvar() async {
-    Database db = await ConnectionFactory.factory.database;
-    BoiDAO dao = BoiDAO(db);
+  // void _salvar() async {
+  //   Database db = await ConnectionFactory.factory.database;
+  //   BoiDAO dao = BoiDAO(db);
 
+  //   Boi boi = Boi.novo(_nomeController.text, _racaController.text,
+  //       int.parse(_idadeController.text));
+
+  //   await dao.inserir(boi);
+  //   ConnectionFactory.factory.close();
+
+  //   _nomeController.clear();
+  //   _racaController.clear();
+  //   _idadeController.clear();
+
+  //   ScaffoldMessenger.of(context)
+  //       .showSnackBar(const SnackBar(content: Text("Boi salvo com sucesso.")));
+  // }
+
+  void _salvar() async {
     Boi boi = Boi.novo(_nomeController.text, _racaController.text,
         int.parse(_idadeController.text));
-
-    await dao.inserir(boi);
-    ConnectionFactory.factory.close();
-
-    _nomeController.clear();
-    _racaController.clear();
-    _idadeController.clear();
-
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text("Boi salvo com sucesso.")));
+    try {
+      BoiRepository repository = BoiRepository();
+      await repository.inserir(boi);
+      _nomeController.clear();
+      _racaController.clear();
+      _idadeController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Boi salvo com sucesso.')));
+    } catch (exception) {
+      showError(context, "Erro inserindo boi", exception.toString());
+    }
   }
 }

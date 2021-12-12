@@ -1,5 +1,7 @@
 import 'package:boi_system/dao/boi_dao.dart';
 import 'package:boi_system/dao/connection_factory.dart';
+import 'package:boi_system/helper/error.dart';
+import 'package:boi_system/repositories/boi_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:boi_system/model/boi.dart';
@@ -127,30 +129,57 @@ class _EditarBoiState extends State<EditarBoiPage> {
     );
   }
 
+  // void _obterBoi() async {
+  //   Database db = await ConnectionFactory.factory.database;
+  //   BoiDAO dao = BoiDAO(db);
+  //   _boi = await dao.obterPorId(_id);
+
+  //   ConnectionFactory.factory.close();
+
+  //   _nomeController.text = _boi!.nome;
+  //   _racaController.text = _boi!.raca;
+  //   _idadeController.text = _boi!.idade.toString();
+  // }
+
+  // void _salvar() async {
+  //   _boi!.nome = _nomeController.text;
+  //   _boi!.raca = _racaController.text;
+  //   _boi!.idade = int.parse(_idadeController.text);
+
+  //   Database db = await ConnectionFactory.factory.database;
+  //   BoiDAO dao = BoiDAO(db);
+  //   await dao.atualizar(_boi!);
+
+  //   ConnectionFactory.factory.close();
+
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Boi editado com sucesso.")));
+  // }
+
   void _obterBoi() async {
-    Database db = await ConnectionFactory.factory.database;
-    BoiDAO dao = BoiDAO(db);
-    _boi = await dao.obterPorId(_id);
-
-    ConnectionFactory.factory.close();
-
-    _nomeController.text = _boi!.nome;
-    _racaController.text = _boi!.raca;
-    _idadeController.text = _boi!.idade.toString();
+    try {
+      BoiRepository repository = BoiRepository();
+      _boi = await repository.buscar(_id);
+      _nomeController.text = _boi!.nome;
+      _racaController.text = _boi!.raca;
+      _idadeController.text = _boi!.idade.toString();
+    } catch (exception) {
+      showError(context, "Erro recuperando boi", exception.toString());
+      Navigator.pop(context);
+    }
   }
 
   void _salvar() async {
     _boi!.nome = _nomeController.text;
     _boi!.raca = _racaController.text;
     _boi!.idade = int.parse(_idadeController.text);
-
-    Database db = await ConnectionFactory.factory.database;
-    BoiDAO dao = BoiDAO(db);
-    await dao.atualizar(_boi!);
-
-    ConnectionFactory.factory.close();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Boi editado com sucesso.")));
+    try {
+      BoiRepository repository = BoiRepository();
+      await repository.alterar(_boi!);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Boi editado com sucesso.')));
+    } catch (exception) {
+      showError(context, "Erro editando boi", exception.toString());
+    }
   }
 }

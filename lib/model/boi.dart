@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Boi {
   int? id;
   String nome;
@@ -30,4 +32,12 @@ class Boi {
       return Boi.fromMap(maps[i]);
     });
   }
+
+  static Boi fromJson(String j) => Boi.fromMap(jsonDecode(j));
+  static List<Boi> fromJsonList(String j) {
+    final parsed = jsonDecode(j).cast<Map<String, dynamic>>();
+    return parsed.map<Boi>((map) => Boi.fromMap(map)).toList();
+  }
+
+  String toJson() => jsonEncode(toMap());
 }
